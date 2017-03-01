@@ -1,0 +1,7 @@
+<% if(errorReg){ %>
+	<% errorReg.forEach(function(error){ %>
+	<div class="regError">
+		<div class="alert alert-danger"><%= error.msg %></div>
+	</div>
+	<% }) %>
+<% } %>

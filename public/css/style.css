@@ -1,0 +1,22 @@
+.form{
+	position: relative;
+	text-align: left;
+	margin: auto;
+	margin-top: 20px;
+	width: 400px;
+}
+
+.btn-primary{
+	position: absolute;
+	right: 0px;
+}
+
+.regError{
+	margin: auto;
+	margin-top: 20px;
+	width: 300px;
+}
+
+.alert{
+	text-align: center;
+}
