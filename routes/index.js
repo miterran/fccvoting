@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Poll = require('../models/poll');
 const Pp = require('./passport.js');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -6,13 +7,20 @@ const LocalStrategy = require('passport-local').Strategy;
 module.exports = function(app, passport){
 
 	app.get('/', function(req, res){
-		res.render('index', {currentUser: res.locals.user, 
-							 title: 'FCC Voting'});
+		Poll.find({}).then(function(result){
+			res.render('index', {currentUser: res.locals.user, 
+								 allPolls: result,
+								 title: 'FCC Voting'});
+		})
 	});
 
 	app.get('/mypoll', Pp.ensureAuthenticated, function(req, res){
-		res.render('mypoll', {currentUser: res.locals.user, 
-							  title: 'My Polls'});
+		console.log(res.locals.user);
+		Poll.find({author: res.locals.user}).then(function(result){
+			res.render('mypoll', {currentUser: res.locals.user, 
+								  mypolls: result,
+								  title: 'My Polls'});
+		})
 	});
 
 	app.get('/newpoll', Pp.ensureAuthenticated, function(req, res){
@@ -20,8 +28,97 @@ module.exports = function(app, passport){
 							   title: 'Post a New Poll'});
 	});
 
-	app.post('/newpoll', function(req, res){
-		res.redirect('/newpoll')
+	app.post('/newpoll', Pp.ensureAuthenticated, function(req, res){
+		let author = req.user.username;
+		let title = req.body.polltitle;
+		let options = [];
+		for(let key in req.body){
+			options.push(req.body[key]);
+		}
+
+		let newPoll = new Poll({
+			author: author,
+			title: title,
+			date: Date(),
+			polls: []
+		})
+
+		for(let i = 1; i < options.length; i++){
+			newPoll.polls.push({options: options[i], count: 0});
+		}
+
+		for(let i = 1; i < options.length; i++){
+			for(let k = i + 1; k < options.length; k++){
+				if(options[i] == options[k]){
+					req.flash('alert alert-danger', 'Error: options duplicated');
+					return res.redirect('newpoll');
+				}
+			}
+			if(i == options.length-1){
+				Poll.findOne({title: title}).then(function(result){
+					if(!result){
+						newPoll.save().then(function(){
+							req.flash('alert alert-success', 'you have created a new poll ' + title);
+							res.redirect('vote/' + title);
+						});
+					}else{
+						req.flash('alert alert-danger', 'poll tile has been used');
+						res.redirect('newpoll');
+					}
+				})
+			}
+		}
+	});
+
+	app.post('/delete', Pp.ensureAuthenticated, function(req, res){
+		console.log(req.body);
+		// Poll.findOneAndRemove({title: req.body.title}).then(function(result){
+		// 	console.log(result);
+		// 	res.redirect('mypoll');
+		// })
+		Poll.findOne({title: req.body.title}).then(function(result){
+			let depoll = result.title;
+			if(result.author == res.locals.user){
+				result.remove().then(function(){
+					req.flash('alert alert-success', 'you have remove' + depoll);
+					res.redirect('mypoll');
+				})
+			}else{
+				console.log('not owner');
+				req.flash('alert alert-danger', 'Error: can not delete this poll, you are not the owner');
+				res.redirect('vote/'+depoll);
+			}
+		})
+	});
+
+	app.get('/vote/:title', function(req, res){
+		    let title = req.params.title;
+		    Poll.findOne({title: title}).then(function(result){
+				res.render('vote', {currentUser: res.locals.user, 
+									title: 'vote',
+									author: result.author,
+									polltitle: title});
+		    })
+	});
+
+	app.post('/vote/:title', Pp.ensureAuthenticated, function(req, res){
+		let title = req.params.title;
+		console.log(req.body);
+		console.log(req.params);
+		if(parseInt(req.body.options) >= 0){
+			Poll.update({'title': req.params.title}, {$inc:{['polls.'+ req.body.options +'.count']: 1}}).then(function(result){
+				req.flash('alert alert-success', 'you have voted');
+				res.redirect(title);
+			})
+		}else{
+			Poll.findOne({'title': req.params.title}).then(function(result){
+				result.polls.push({options: req.body.newoption, count: 0});
+				result.save().then(function(){
+					req.flash('alert alert-success', 'you have added a new option');
+					res.redirect(title);
+				})
+			})
+		}
 	});
 
 	app.get('/register', function(req, res){
@@ -82,7 +179,6 @@ module.exports = function(app, passport){
 	    		console.log(err);
 	    		return done(null, false, {message: 'Unknow User'});
 	    	}
-	    	console.log(user);
 	    	User.comparePassword(password, user.password, function(err, isMatch){
 	    		if(err) throw err;
 	    		if(isMatch){
@@ -95,7 +191,7 @@ module.exports = function(app, passport){
 	}));
 
 	passport.serializeUser(function(user, done) {
-	  done(null, user.id);
+	  done(null, user);
 	});
 
 	passport.deserializeUser(function(id, done) {
@@ -109,12 +205,10 @@ module.exports = function(app, passport){
 							  title: 'Sign in'});
 	});
 
-	app.post('/signin', passport.authenticate('local', {successRedirect: '/', failureRedirect:'/signin', failureFlash: true, successFlash: "Welcome!"}),function(req, res){
-		res.redirect('/signin');
-	});
+	app.post('/signin', passport.authenticate('local', {successRedirect: '/', failureRedirect:'/signin', failureFlash: true, successFlash: "Welcome!"}));
 
 	app.get('/logout', Pp.ensureAuthenticated, function(req, res){
-		req.logOut();
+		req.logout();
 		res.redirect('/');
 	});
 	

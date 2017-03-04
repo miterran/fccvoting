@@ -1,5 +1,13 @@
 <%- include header %>
 
+<div style="width: 400px; margin: auto;">
+<%- messages('message_template', locals) %>
+</div>
 
+<div class="list-group" style="margin-top: 40px">
+<% mypolls.forEach(function(val){ %>
+	<a href="/vote/<%= val.title %>" class="list-group-item"><%= val.title %></a>
+<% }) %>
+</div>
 
 <%- include footer %>

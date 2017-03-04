@@ -1,14 +1,18 @@
 <%- include header %>
 
 <div class="form">
+<%- messages('message_template', locals) %>
 <form method="post" action="/newpoll">
 	<div class="form-group">
 	  <label>Title</label>
-	  <input type="text" class="form-control" placeholder="Title" name="username">
+	  <input type="text" class="form-control" placeholder="Title" name="polltitle">
 	</div>
 	<div class="form-group">
 	  <label>Options</label></br>
 	  <input type="text" class="form-control" placeholder="Option 1" name="option1">
+	</div>
+	<div class="form-group">
+	  <input type="text" class="form-control" placeholder="Option 2" name="option2">
 	</div>
 	<div class="addOptionBelow">
 	<!-- add new option from jQuerry -->
@@ -18,4 +22,5 @@
 </form>
 </div>
 
+<script type="text/javascript" src="/public/js/newpoll.js"></script>
 <%- include footer %>

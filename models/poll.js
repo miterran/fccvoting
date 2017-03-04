@@ -1,17 +1,18 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const OptionSchema = new Schema({
-	option: String,
-	count: Number
-});
+// const OptionSchema = new Schema({
+// 	options: String,
+// 	count: Number
+// });
 
 const NewPollSchema = new Schema({
 	author: String,
 	title: String,
-	polls: [BookSchema]
+	date: String,
+	polls: []
 });
 
-const Poll = mongoose.model('polls', NewPollSchema);
+const Poll = mongoose.model('poll', NewPollSchema);
 
 module.exports = Poll;

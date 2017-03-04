@@ -5,13 +5,12 @@ const port = process.env.PORT || 8080;
 const flash = require('connect-flash');
 const expressMsg = require('express-messages');
 const expressValidator = require('express-validator');
-
 const morgan = require('morgan');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const bodyParser   = require('body-parser');
 const passport = require('passport');
-
+const MongoStore = require('connect-mongo')(session);
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://test:test@ds015879.mlab.com:15879/fccpoll')
@@ -27,7 +26,8 @@ app.use(bodyParser.json());
 app.use(session({
 	secret: 'secret',
 	saveUninitialized: true,
-	resave: true
+	resave: true,
+  store: new MongoStore({mongooseConnection: mongoose.connection})
 }));
 
 app.use(passport.initialize()); 
@@ -35,7 +35,6 @@ app.use(passport.session());
 
 app.use(flash());
 app.use(function(req, res, next){
-  console.log()
   res.locals.messages = expressMsg(req, res);
   if(req.user){
     res.locals.user = req.user.username;

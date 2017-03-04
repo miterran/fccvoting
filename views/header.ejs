@@ -5,6 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= title %></title>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+  <script type="text/javascript" src="/public/js/randomColor.js"></script>
+  <script type="text/javascript" src="/public/js/chart.js"></script>
+  <script type="text/javascript" src="/public/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/public/js/main.js"></script>
   <link rel="stylesheet" href="/public/css/bootstrap.min.css" />
   <link rel="stylesheet" href="/public/css/style.css" />
   </head>
@@ -15,13 +20,11 @@
       <div class="header clearfix">
         <nav>
             <ul id="navbar" class="nav nav-pills pull-right">
-            <% console.log(user) %>
-            <% if (!user) { %>
             <li role="presentation"><a href="/">Home</a></li>
+            <% if (!user) { %>
             <li role="presentation"><a href="/signin">Sign in</a></li>
             <li role="presentation"><a href="/register">Register</a></li>
             <% } else { %>
-            <% console.log(user) %>
             <li role="presentation"><a href="/mypoll">My Poll</a></li>
             <li role="presentation"><a href="/newpoll">New Poll</a></li>
             <li role="presentation"><a href="/logout">Logout</a></li>
